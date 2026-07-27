@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RideBuilder.Affiliate.AspNetCore/RideBuilder.Affiliate.AspNetCore.csproj" />
+    <Project Path="src/RideBuilder.Affiliate/RideBuilder.Affiliate.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RideBuilder.Affiliate.Conformance/RideBuilder.Affiliate.Conformance.csproj" />
+    <Project Path="tests/RideBuilder.Affiliate.Tests/RideBuilder.Affiliate.Tests.csproj" />
+  </Folder>
+</Solution>

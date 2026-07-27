@@ -1,0 +1,33 @@
+<Project>
+
+  <!-- Standalone SDK build root. Deliberately NOT importing any parent Directory.Build.props so the
+       package's release cadence and settings are decoupled from the AffiliateNetwork service build. -->
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Reproducible builds + debugging into the SDK from a symbol package. -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Single source of the package/assembly version. The wire `version` is read from the assembly at
+         runtime (see SdkInfo), so it can never drift from this. Bump here on release. -->
+    <Version>0.1.0</Version>
+
+    <!-- Shared NuGet metadata for the packable projects. -->
+    <Authors>RideBuilder</Authors>
+    <Company>RideBuilder</Company>
+    <Product>RideBuilder Affiliate SDK</Product>
+    <PackageProjectUrl>https://ridebuilder.com</PackageProjectUrl>
+    <!-- Private/UNLICENSED package (mirrors @ridebuilder/affiliate); no SPDX license expression set.
+         Distributed as an artifact, not published to a public feed. -->
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+</Project>

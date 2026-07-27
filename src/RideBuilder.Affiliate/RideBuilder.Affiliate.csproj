@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <PackageId>RideBuilder.Affiliate</PackageId>
+    <Description>Server-side SDK for RideBuilder FirstParty affiliate tracking: capture click_id and send checkout/return postbacks. Zero-dependency client + framework-free capture helpers.</Description>
+    <PackageTags>ridebuilder;affiliate;attribution;postback</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- System.Text.Json is in-box on net8.0; on netstandard2.0 it must be referenced. This is the one
+       first-party dependency the "zero-dep" core accepts (hand-rolling JSON is not worth it). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+</Project>
