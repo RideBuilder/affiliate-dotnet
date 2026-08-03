@@ -23,9 +23,12 @@
     <Company>RideBuilder</Company>
     <Product>RideBuilder Affiliate SDK</Product>
     <PackageProjectUrl>https://ridebuilder.com</PackageProjectUrl>
-    <!-- Private/UNLICENSED package (mirrors @ridebuilder/affiliate); no SPDX license expression set.
-         Distributed as an artifact, not published to a public feed. -->
+    <!-- MIT-licensed public packages (mirror @ridebuilder/affiliate on npm). SPDX expression is
+         embedded in the .nupkg; NuGet.org renders it and needs no packed license file. -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/RideBuilder/Backend</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
