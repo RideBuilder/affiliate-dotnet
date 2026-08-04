@@ -27,7 +27,7 @@
          embedded in the .nupkg; NuGet.org renders it and needs no packed license file. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <RepositoryUrl>https://github.com/RideBuilder/Backend</RepositoryUrl>
+    <RepositoryUrl>https://github.com/RideBuilder/affiliate-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

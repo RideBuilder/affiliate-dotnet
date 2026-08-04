@@ -21,7 +21,7 @@
   <ItemGroup>
     <Compile Include="..\_shared\TestHttp.cs" Link="TestHttp.cs" />
     <!-- Run the SAME language-neutral fixtures the Node SDK runs. -->
-    <None Include="..\..\..\conformance\*.json" Link="conformance\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\conformance\*.json" Link="conformance\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
