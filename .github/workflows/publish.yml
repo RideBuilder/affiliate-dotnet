@@ -2,9 +2,13 @@ name: publish
 
 # Release flow: bump <Version> in Directory.Build.props, commit, then:
 #   git tag vX.Y.Z && git push origin vX.Y.Z
-# Publishes BOTH packages (core first, then AspNetCore) to NuGet.
-# One-time setup: create a NuGet API key (scope: Push, glob RideBuilder.*) and add it as the
-# repo secret NUGET_API_KEY (Settings → Secrets and variables → Actions).
+# Publishes BOTH packages (core first, then AspNetCore) to NuGet via Trusted Publishing (OIDC) —
+# no stored API key.
+# One-time setup:
+#   1. nuget.org → account → Trusted Publishing → create a policy:
+#        package owner = <you>, repo owner = RideBuilder, repo = affiliate-dotnet, workflow = publish.yml
+#   2. add a repo VARIABLE (not secret) NUGET_USER = your nuget.org username
+#      (Settings → Secrets and variables → Actions → Variables → New repository variable)
 
 on:
   push:
@@ -16,6 +20,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for NuGet Trusted Publishing (OIDC)
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -40,10 +47,14 @@ jobs:
           dotnet pack src/RideBuilder.Affiliate/RideBuilder.Affiliate.csproj -c Release -o artifacts
           dotnet pack src/RideBuilder.Affiliate.AspNetCore/RideBuilder.Affiliate.AspNetCore.csproj -c Release -o artifacts
 
+      - name: NuGet login (OIDC → short-lived key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
       - name: Push (core first, then AspNetCore; .snupkg symbols follow automatically)
         run: |
           VER="${GITHUB_REF_NAME#v}"
-          dotnet nuget push "artifacts/RideBuilder.Affiliate.${VER}.nupkg"          -k "$NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push "artifacts/RideBuilder.Affiliate.AspNetCore.${VER}.nupkg" -k "$NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push "artifacts/RideBuilder.Affiliate.${VER}.nupkg"          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push "artifacts/RideBuilder.Affiliate.AspNetCore.${VER}.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
