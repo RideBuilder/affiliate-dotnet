@@ -34,11 +34,14 @@ public static class ClickCapture
         if (string.IsNullOrEmpty(url))
             return null;
 
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
+        // Treat it as absolute only when it truly has an http(s) scheme. On Unix, Uri.TryCreate with
+        // UriKind.Absolute also accepts a leading-slash path as a file:// URI (which drops the query), so
+        // UriKind.Absolute alone can't tell absolute from relative — resolve relatives against a placeholder
+        // base to read their query, mirroring getClickIdFromUrl in the Node SDK.
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed)
+            || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps))
         {
-            // Relative URL: resolve against a placeholder base so we can read its query, mirroring
-            // getClickIdFromUrl in the Node SDK.
-            var rel = url.Length > 0 && url[0] == '/' ? url : "/" + url;
+            var rel = url[0] == '/' ? url : "/" + url;
             if (!Uri.TryCreate("http://placeholder.local" + rel, UriKind.Absolute, out parsed))
                 return null;
         }
