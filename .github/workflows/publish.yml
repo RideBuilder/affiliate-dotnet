@@ -1,0 +1,49 @@
+name: publish
+
+# Release flow: bump <Version> in Directory.Build.props, commit, then:
+#   git tag vX.Y.Z && git push origin vX.Y.Z
+# Publishes BOTH packages (core first, then AspNetCore) to NuGet.
+# One-time setup: create a NuGet API key (scope: Push, glob RideBuilder.*) and add it as the
+# repo secret NUGET_API_KEY (Settings → Secrets and variables → Actions).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Verify tag matches version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VER=$(sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' Directory.Build.props | head -1)
+          echo "tag=$TAG props=$VER"
+          test "$TAG" = "$VER" || { echo "::error::tag $TAG != <Version> $VER"; exit 1; }
+
+      - name: Test
+        run: dotnet test -c Release
+
+      - name: Pack
+        run: |
+          dotnet pack src/RideBuilder.Affiliate/RideBuilder.Affiliate.csproj -c Release -o artifacts
+          dotnet pack src/RideBuilder.Affiliate.AspNetCore/RideBuilder.Affiliate.AspNetCore.csproj -c Release -o artifacts
+
+      - name: Push (core first, then AspNetCore; .snupkg symbols follow automatically)
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          dotnet nuget push "artifacts/RideBuilder.Affiliate.${VER}.nupkg"          -k "$NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push "artifacts/RideBuilder.Affiliate.AspNetCore.${VER}.nupkg" -k "$NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
