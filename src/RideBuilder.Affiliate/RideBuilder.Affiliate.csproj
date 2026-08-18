@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>RideBuilder.Affiliate</PackageId>
@@ -14,10 +14,18 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <!-- System.Text.Json is in-box on net8.0; on netstandard2.0 it must be referenced. This is the one
+  <!-- System.Text.Json is in-box on net8.0; everywhere else it must be referenced. This is the one
        first-party dependency the "zero-dep" core accepts (hand-rolling JSON is not worth it). -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <!-- .NET Framework does not reference System.Net.Http by default, and HttpClient appears in this
+       package's PUBLIC surface (the RideBuilderClient ctor). Without this, a consuming net4x project
+       fails to compile with CS0012 even when it never touches HttpClient. Packing emits a
+       <frameworkAssembly> entry, so the reference flows to consumers rather than stopping here. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
 </Project>

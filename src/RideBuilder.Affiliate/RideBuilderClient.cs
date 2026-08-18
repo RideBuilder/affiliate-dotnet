@@ -269,7 +269,16 @@ public sealed class RideBuilderClient : IDisposable
 
     // 250 * 2^(attempt-1) ms + up to 100ms jitter — identical to the Node backoff.
     private TimeSpan Backoff(int attempt)
-        => TimeSpan.FromMilliseconds((250 * Math.Pow(2, attempt - 1)) + _rng.Next(100));
+        => TimeSpan.FromMilliseconds((250 * Math.Pow(2, attempt - 1)) + Jitter());
+
+    // Random instance methods are not thread-safe. One client shared across concurrent requests (the
+    // normal DI setup) could otherwise corrupt its state and collapse the jitter that keeps retries
+    // from bunching up.
+    private int Jitter()
+    {
+        lock (_rng)
+            return _rng.Next(100);
+    }
 
     private static async Task<string?> ReadErrorCodeAsync(HttpResponseMessage res)
     {

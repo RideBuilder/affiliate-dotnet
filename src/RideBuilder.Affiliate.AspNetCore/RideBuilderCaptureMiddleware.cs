@@ -7,9 +7,15 @@ namespace RideBuilder.Affiliate.AspNetCore;
 
 /// <summary>
 /// Reads a validated click_id off each incoming request and stashes it on
-/// <c>HttpContext.Items["RideBuilderClickId"]</c>. Does not persist it — bind it to your cart/order via
-/// <see cref="RideBuilderCaptureOptions.OnCapture"/> or by reading it later with
-/// <c>context.GetRideBuilderClickId()</c>. Mirrors the Node <c>capture()</c> middleware.
+/// <c>HttpContext.Items["RideBuilderClickId"]</c>. Resolves in the order attribution survives — landing
+/// URL, forwarded header, then the <c>ridebuilder_attribution</c> cookie — so a returning shopper is
+/// re-hydrated on requests whose URL carries nothing.
+/// <para>
+/// <c>Items</c> lives for ONE request. Bind the click_id onto your cart/order from
+/// <see cref="RideBuilderCaptureOptions.OnCapture"/>, or read it with
+/// <c>context.GetRideBuilderClickId()</c> during the same request — never expect it to survive to the next
+/// one. Send the value stored on your own order at checkout.
+/// </para>
 /// </summary>
 public sealed class RideBuilderCaptureMiddleware
 {
@@ -26,7 +32,7 @@ public sealed class RideBuilderCaptureMiddleware
     /// <summary>Invoke the middleware.</summary>
     public async Task InvokeAsync(HttpContext context)
     {
-        var clickId = context.Request.Query.GetRideBuilderClickId();
+        var clickId = context.Request.ResolveRideBuilderClickId();
         if (clickId is not null)
         {
             context.Items[_options.ItemKey] = clickId;

@@ -16,6 +16,9 @@ namespace RideBuilder.Affiliate.Capture;
 /// </summary>
 public static class ClickCapture
 {
+    /// <summary>The forwarding header <see cref="FromHeaders"/> reads by default.</summary>
+    public const string DefaultHeaderName = "X-RideBuilder-Click-Id";
+
     /// <summary>Read the click_id from a decoded query map (e.g. framework query parameters).</summary>
     public static string? FromQuery(IReadOnlyDictionary<string, string?> query)
     {
@@ -67,6 +70,27 @@ public static class ClickCapture
             return null;
 
         return AttributionCookie.Parse(raw)?.ClickId;
+    }
+
+    /// <summary>
+    /// Read a validated click_id off a forwarding header (case-insensitive; default
+    /// <see cref="DefaultHeaderName"/>) — the decoupled path, where a separate frontend captures the
+    /// click_id and forwards it on the checkout call. A forwarded header carries no <c>ref</c>, so only
+    /// the click_id shape is enforced.
+    /// </summary>
+    public static string? FromHeaders(IReadOnlyDictionary<string, string?> headers, string name = DefaultHeaderName)
+    {
+        if (headers is null)
+            return null;
+
+        foreach (var pair in headers)
+        {
+            if (!string.Equals(pair.Key, name, StringComparison.OrdinalIgnoreCase))
+                continue;
+            return ClickId.IsValid(pair.Value) ? pair.Value : null;
+        }
+
+        return null;
     }
 
     // Minimal query-string parser (first value wins, like URLSearchParams.get; '+' decodes to space).

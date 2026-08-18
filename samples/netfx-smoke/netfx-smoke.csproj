@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Consumer smoke test for the .NET Framework target. Deliberately NOT in the solution: it consumes
+       the PACKED .nupkg the way a real customer does, not a ProjectReference, and it only builds on
+       Windows. Building the netstandard2.0/net462 assembly proves nothing about whether a net4x project
+       can consume it — HttpClient sits in this package's public surface, so a missing framework
+       reference fails the CONSUMER with CS0012 while the SDK itself builds clean.
+
+       Run locally from the repo root:
+         dotnet pack -c Release -o artifacts
+         dotnet build samples/netfx-smoke -c Release -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RideBuilder.Affiliate" Version="$(Version)" />
+  </ItemGroup>
+
+</Project>

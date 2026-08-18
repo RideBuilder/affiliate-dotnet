@@ -18,7 +18,29 @@ permissions:
   contents: read
 
 jobs:
+  # Proves a .NET Framework project can CONSUME the packed package. The publish job runs on Linux, which
+  # cannot build net4x at all, and building our own net462 assembly proves nothing about the consumer
+  # side: HttpClient is in this package's public surface, so a missing framework reference fails the
+  # consumer with CS0012 while our build stays green. This job is the only thing that catches that.
+  netfx-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Pack
+        run: dotnet pack -c Release -o artifacts
+
+      - name: Consume the packed package from .NET Framework
+        run: dotnet run --project samples/netfx-smoke -c Release
+
   publish:
+    needs: netfx-smoke
     runs-on: ubuntu-latest
     permissions:
       id-token: write   # required for NuGet Trusted Publishing (OIDC)

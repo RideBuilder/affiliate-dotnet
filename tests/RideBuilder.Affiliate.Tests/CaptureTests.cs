@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RideBuilder.Affiliate.Capture;
 using RideBuilder.Affiliate.Validation;
 using Xunit;
@@ -24,6 +25,30 @@ public class CaptureTests
     [Fact]
     public void FromQueryString_returns_null_for_an_invalid_click_id()
         => Assert.Null(ClickCapture.FromQueryString("?ref=ridebuilder&click_id=not-a-uuid"));
+
+    [Fact]
+    public void FromHeaders_reads_the_forwarded_header()
+        => Assert.Equal(ValidClickId, ClickCapture.FromHeaders(
+            new Dictionary<string, string?> { ["X-RideBuilder-Click-Id"] = ValidClickId }));
+
+    [Fact]
+    public void FromHeaders_matches_the_header_name_case_insensitively()
+        => Assert.Equal(ValidClickId, ClickCapture.FromHeaders(
+            new Dictionary<string, string?> { ["x-ridebuilder-click-id"] = ValidClickId }));
+
+    [Fact]
+    public void FromHeaders_honours_a_custom_header_name()
+        => Assert.Equal(ValidClickId, ClickCapture.FromHeaders(
+            new Dictionary<string, string?> { ["X-Shop-Click"] = ValidClickId }, "X-Shop-Click"));
+
+    [Fact]
+    public void FromHeaders_returns_null_for_an_invalid_click_id()
+        => Assert.Null(ClickCapture.FromHeaders(
+            new Dictionary<string, string?> { ["X-RideBuilder-Click-Id"] = "not-a-uuid" }));
+
+    [Fact]
+    public void FromHeaders_returns_null_when_the_header_is_absent()
+        => Assert.Null(ClickCapture.FromHeaders(new Dictionary<string, string?> { ["Accept"] = "*/*" }));
 
     [Fact]
     public void FromCookieHeader_recovers_click_id_from_the_attribution_cookie()
